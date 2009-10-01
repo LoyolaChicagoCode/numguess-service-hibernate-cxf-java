@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd 
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-http.xml" />
+
+	<jaxws:endpoint id="numguessService"
+		implementor="#numguessServiceImpl"
+		implementorClass="numguess.NumguessService"
+		address="/NumguessService">
+		<jaxws:serviceFactory>
+			<ref bean="service-factory" />
+		</jaxws:serviceFactory>
+	</jaxws:endpoint>
+
+	<!-- provides logging for the cxf bus (observe the input and output logging on the consule as you access the service) -->
+	<cxf:bus>
+		<cxf:features>
+			<cxf:logging />
+		</cxf:features>
+	</cxf:bus>
+
+	<bean id="numguessServiceImpl"
+		class="numguess.DaoAwareNumguessService">
+		<property name="numguessDAO" ref="numguessDao" />
+		<property name="userIDProvider" ref="userIDProvider" />
+	</bean>
+
+	<!-- This bean is our data access object -->
+	<bean id="numguessDao" class="numguess.HibernateNumguessDAO">
+		<property name="sessionFactory" ref="numguessSessionFactory" />
+		<property name="sessionFactoryName"
+			value="numguessSessionFactory" />
+	</bean>
+
+	<bean id="userIDProvider" class="numguess.WebSessionIDProvider" />
+
+	<bean id="service-factory"
+		class="org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean">
+		<!-- our data binding is AegisDataBinding which does the magic of translating everything automatically automatically -->
+		<property name="dataBinding" ref="aegisBean" />
+		<property name="serviceConfigurations">
+			<list>
+				<bean
+					class="org.apache.cxf.jaxws.support.JaxWsServiceConfiguration" />
+				<bean
+					class="org.apache.cxf.aegis.databinding.AegisServiceConfiguration" />
+				<bean
+					class="org.apache.cxf.service.factory.DefaultServiceConfiguration" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- Specify we want the agegis data binding...this is how wsdl's are automatically automatically created -->
+	<bean id="aegisBean"
+		class="org.apache.cxf.aegis.databinding.AegisDatabinding" />
+
+	<!-- This bean is a Hibernate session factory -->
+	<bean id="numguessSessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="mappingResources">
+			<list>
+				<value>numguess/Numguess.hbm.xml</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.HSQLDialect
+				</prop>
+				<prop key="hibernate.show_sql">true</prop>
+			</props>
+		</property>
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="numguessSessionFactory" />
+	</bean>
+
+	<!-- This bean represents the SQL data source -->
+	<bean id="dataSource"
+		class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+		<property name="url" value="jdbc:hsqldb:file:/tmp/numguessdb" />
+		<property name="username" value="sa" />
+		<property name="password" value="" />
+	</bean>
+</beans>

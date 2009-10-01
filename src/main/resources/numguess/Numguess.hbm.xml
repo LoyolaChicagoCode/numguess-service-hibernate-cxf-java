@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+
+	<class name="numguess.HibernateGameModel" table="GAME">
+		<id name="id" column="SESSIONID" type="string" access="field">
+			<generator class="assigned" />
+		</id>
+		<property name="answer" column="ANSWER" type="int"
+			access="field" />
+		<property name="numGuesses" column="NUMGUESSES" type="int"
+			access="field" />
+		<many-to-one name="sharedData"
+			class="numguess.HibernateSharedData" column="SHARED" not-null="false"
+			access="field" cascade="persist,merge,save-update" lazy="false"/>
+	</class>
+
+	<class name="numguess.HibernateSharedData" table="SHAREDDATA">
+		<id name="id" column="ID" type="int" access="field">
+			<generator class="assigned" />
+		</id>
+		<property name="bestScore" column="BESTSCORE" type="int"
+			access="field" />
+	</class>
+
+</hibernate-mapping>
