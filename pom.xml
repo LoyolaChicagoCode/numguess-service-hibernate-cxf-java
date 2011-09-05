@@ -2,7 +2,7 @@
 <project>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.luc.cs.laufer.cs433</groupId>
-	<artifactId>numguess-hibernate-cxf</artifactId>
+	<artifactId>numguess-service-hibernate-cxf-java</artifactId>
 	<packaging>war</packaging>
 	<version>1.0-SNAPSHOT</version>
 	<description>Example integrating CXF and Hibernate</description>
